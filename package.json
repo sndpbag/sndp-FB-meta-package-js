@@ -1,0 +1,22 @@
+{
+  "name": "@sndp/meta-sdk-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Meta SDK for Facebook, Instagram, and WhatsApp",
+  "author": "Sandip (SNDP)",
+  "license": "MIT",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean",
+    "publish-packages": "pnpm publish -r --access public"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "turbo": "^1.11.0",
+    "vitest": "^1.0.0"
+  }
+}
