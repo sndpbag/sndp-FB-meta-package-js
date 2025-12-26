@@ -1,0 +1,40 @@
+{
+  "name": "@sndp/meta-whatsapp",
+  "version": "1.0.0",
+  "description": "WhatsApp Cloud API client for Meta SDK",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./messages": {
+      "import": "./dist/messages/index.mjs",
+      "require": "./dist/messages/index.js",
+      "types": "./dist/messages/index.d.ts"
+    },
+    "./webhook": {
+      "import": "./dist/webhook/index.mjs",
+      "require": "./dist/webhook/index.js",
+      "types": "./dist/webhook/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@sndp/meta-core": "workspace:*",
+    "axios": "^1.6.0",
+    "form-data": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.0",
+    "vitest": "^1.0.0"
+  }
+}
