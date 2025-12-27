@@ -1,0 +1,36 @@
+// ============================================
+// packages/cli/package.json
+// ============================================
+{
+  "name": "@sndp/meta-cli",
+  "version": "1.0.0",
+  "description": "CLI tool for Meta SDK",
+  "bin": {
+    "meta-sdk": "./bin/meta-sdk.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs --dts",
+    "dev": "tsup src/index.ts --format cjs --dts --watch",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@sndp/meta-core": "workspace:*",
+    "@sndp/meta-whatsapp": "workspace:*",
+    "chalk": "^4.1.2",
+    "inquirer": "^8.2.5",
+    "ora": "^5.4.1",
+    "boxen": "^5.1.2",
+    "log-symbols": "^4.1.0",
+    "commander": "^11.1.0",
+    "dotenv": "^16.3.1",
+    "axios": "^1.6.0",
+    "fs-extra": "^11.1.1"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^8.2.5",
+    "@types/fs-extra": "^11.0.1",
+    "tsup": "^8.0.0"
+  }
+}
