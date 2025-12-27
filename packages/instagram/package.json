@@ -1,0 +1,47 @@
+// ============================================
+// packages/instagram/package.json
+// ============================================
+{
+  "name": "@sndp/meta-instagram",
+  "version": "1.0.0",
+  "description": "Instagram Business API client for Meta SDK",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./media": {
+      "import": "./dist/media/index.mjs",
+      "require": "./dist/media/index.js",
+      "types": "./dist/media/index.d.ts"
+    },
+    "./engagement": {
+      "import": "./dist/engagement/index.mjs",
+      "require": "./dist/engagement/index.js",
+      "types": "./dist/engagement/index.d.ts"
+    },
+    "./insights": {
+      "import": "./dist/insights/index.mjs",
+      "require": "./dist/insights/index.js",
+      "types": "./dist/insights/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@sndp/meta-core": "workspace:*",
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.0",
+    "vitest": "^1.0.0"
+  }
+}
