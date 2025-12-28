@@ -1,717 +1,714 @@
-# @sndp/meta-sdk - Development Brief 🚀
+# @sndp/meta-sdk 🚀
 
-## Project Overview
+[![npm version](https://img.shields.io/npm/v/@sndp/meta-sdk.svg)](https://www.npmjs.com/package/@sndp/meta-sdk)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+[![Downloads](https://img.shields.io/npm/dm/@sndp/meta-sdk.svg)](https://www.npmjs.com/package/@sndp/meta-sdk)
 
-A production-ready, modular SDK for Meta Platforms (Facebook, Instagram, WhatsApp) with exceptional developer experience. Built with TypeScript, designed for Next.js, React, and Node.js applications.
+The most powerful and developer-friendly SDK for Meta Platforms (Facebook, Instagram, WhatsApp). Simplified, modular, and built for modern frameworks like Next.js, React, and Node.js.
 
-**Core Philosophy:** Simplicity without sacrificing power. Every feature should "just work" with minimal configuration.
+## ✨ Features
+
+- 🔐 **Complete Authentication** - OAuth 2.0, token management, auto-refresh
+- 📲 **WhatsApp Business API** - Messages, templates, media, webhooks
+- 📸 **Instagram Business** - Posts, stories, reels, comments, insights
+- 📄 **Facebook Pages** - Posts, comments, analytics, moderation
+- 🛠 **Best DX** - TypeScript-first, CLI tools, React hooks
+- 🔄 **Auto-Retry** - Smart error handling with exponential backoff
+- 🎯 **Type-Safe** - Full TypeScript support with detailed types
+- 📦 **Modular** - Import only what you need
+- 🚀 **Production-Ready** - Rate limiting, error normalization, mock mode
+
+---
+
+## 📦 Packages
+
+| Package | Description | Version |
+|---------|-------------|---------|
+| [@sndp/meta-core](./packages/core) | Core utilities and HTTP client | ![npm](https://img.shields.io/npm/v/@sndp/meta-core) |
+| [@sndp/meta-auth-client](./packages/auth-client) | Frontend OAuth for React/Next.js | ![npm](https://img.shields.io/npm/v/@sndp/meta-auth-client) |
+| [@sndp/meta-auth-server](./packages/auth-server) | Backend token management | ![npm](https://img.shields.io/npm/v/@sndp/meta-auth-server) |
+| [@sndp/meta-whatsapp](./packages/whatsapp) | WhatsApp Cloud API | ![npm](https://img.shields.io/npm/v/@sndp/meta-whatsapp) |
+| [@sndp/meta-instagram](./packages/instagram) | Instagram Business API | ![npm](https://img.shields.io/npm/v/@sndp/meta-instagram) |
+| [@sndp/meta-pages](./packages/pages) | Facebook Pages API | ![npm](https://img.shields.io/npm/v/@sndp/meta-pages) |
+| [@sndp/meta-cli](./packages/cli) | CLI development tools | ![npm](https://img.shields.io/npm/v/@sndp/meta-cli) |
+
+---
+
+## 🚀 Quick Start
+
+### Installation
+
+```bash
+# Using npm
+npm install @sndp/meta-whatsapp @sndp/meta-auth-server
+
+# Using yarn
+yarn add @sndp/meta-whatsapp @sndp/meta-auth-server
+
+# Using pnpm
+pnpm add @sndp/meta-whatsapp @sndp/meta-auth-server
+```
+
+### CLI Setup (Recommended)
+
+```bash
+npx @sndp/meta-cli init
+```
+
+This interactive tool will:
+- ✅ Choose your framework (Next.js, React, Node.js)
+- ✅ Select modules you need
+- ✅ Generate starter code
+- ✅ Configure environment variables
+- ✅ Install dependencies
+
+---
+
+## 📚 Usage Examples
+
+### 🔐 Authentication
+
+#### Client-Side (React/Next.js)
+
+```tsx
+import { createFacebookLogin } from '@sndp/meta-auth-client';
+
+const { loginWithPopup, logout } = createFacebookLogin({
+  appId: process.env.NEXT_PUBLIC_META_APP_ID!,
+  scopes: ['email', 'whatsapp_business_messaging']
+});
+
+function LoginButton() {
+  const handleLogin = async () => {
+    try {
+      const result = await loginWithPopup();
+      console.log('Logged in:', result);
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
+  };
+
+  return <button onClick={handleLogin}>Login with Facebook</button>;
+}
+```
+
+#### Server-Side (Node.js/Next.js)
+
+```typescript
+import { MetaAuthServer } from '@sndp/meta-auth-server';
+
+const auth = new MetaAuthServer({
+  appId: process.env.META_APP_ID!,
+  appSecret: process.env.META_APP_SECRET!
+});
+
+// Exchange code for token
+const tokens = await auth.exchangeCodeForToken(code);
+
+// Get long-lived token (60 days)
+const longLived = await auth.exchangeForLongLivedToken(tokens.access_token);
+
+// Validate token
+const validation = await auth.validateToken(longLived.access_token);
+console.log('Token valid:', validation.valid);
+```
+
+### 📲 WhatsApp
+
+```typescript
+import { WhatsAppClient } from '@sndp/meta-whatsapp';
+
+const wa = new WhatsAppClient({
+  accessToken: process.env.META_ACCESS_TOKEN!,
+  phoneNumberId: process.env.META_PHONE_NUMBER_ID!
+});
+
+// Send text message
+await wa.sendText('8801712345678', 'Hello from Meta SDK!');
+
+// Send image
+await wa.sendImage('8801712345678', 'https://example.com/image.jpg', 'Check this out!');
+
+// Send template
+await wa.sendTemplate('8801712345678', {
+  name: 'order_confirmation',
+  language: 'en_US',
+  components: [
+    {
+      type: 'body',
+      parameters: [
+        { type: 'text', text: 'John' },
+        { type: 'text', text: '12345' }
+      ]
+    }
+  ]
+});
+
+// Send interactive buttons
+await wa.interactive.sendButtons(
+  '8801712345678',
+  'Choose an option:',
+  [
+    { type: 'reply', reply: { id: '1', title: 'Yes' }},
+    { type: 'reply', reply: { id: '2', title: 'No' }}
+  ]
+);
+
+// Send list
+await wa.interactive.sendList(
+  '8801712345678',
+  'Select a product:',
+  'View Products',
+  [
+    {
+      title: 'Electronics',
+      rows: [
+        { id: '1', title: 'Laptop', description: '$999' },
+        { id: '2', title: 'Phone', description: '$699' }
+      ]
+    }
+  ]
+);
+```
+
+### 📸 Instagram
+
+```typescript
+import { InstagramClient } from '@sndp/meta-instagram';
+
+const ig = new InstagramClient({
+  accessToken: process.env.META_ACCESS_TOKEN!,
+  accountId: process.env.META_INSTAGRAM_ACCOUNT_ID!
+});
+
+// Publish image post
+await ig.feed.publishImage({
+  imageUrl: 'https://example.com/photo.jpg',
+  caption: 'Beautiful sunset 🌅 #nature'
+});
+
+// Publish reel
+await ig.reel.publish({
+  videoUrl: 'https://example.com/video.mp4',
+  caption: 'Check out this amazing video!',
+  shareToFeed: true
+});
+
+// Publish carousel
+await ig.carousel.publish({
+  items: [
+    { imageUrl: 'https://example.com/img1.jpg', isVideo: false },
+    { imageUrl: 'https://example.com/img2.jpg', isVideo: false }
+  ],
+  caption: 'Swipe to see more!'
+});
+
+// Get comments
+const comments = await ig.comments.getComments(mediaId);
+
+// Auto-reply to comments
+await ig.comments.autoReply(
+  mediaId,
+  ['price', 'cost'],
+  'Check our website for pricing!'
+);
+
+// Get insights
+const insights = await ig.insights.getReachAndImpressions('week');
+console.log('Impressions:', insights.impressions);
+console.log('Reach:', insights.reach);
+```
+
+### 📄 Facebook Pages
+
+```typescript
+import { PagesClient } from '@sndp/meta-pages';
+
+const pages = new PagesClient({
+  accessToken: process.env.META_ACCESS_TOKEN!
+});
+
+// Get your pages
+const myPages = await pages.getPages();
+const pageId = myPages[0].id;
+
+// Publish text post
+await pages.posts.publishText(pageId, 'Hello from our page!');
+
+// Publish link
+await pages.posts.publishLink(pageId, {
+  link: 'https://example.com',
+  message: 'Check out our website!'
+});
+
+// Publish photo
+await pages.posts.publishPhoto(pageId, {
+  url: 'https://example.com/image.jpg',
+  caption: 'New product launch!'
+});
+
+// Schedule post
+const futureTime = Math.floor(Date.now() / 1000) + 3600;
+await pages.posts.publishText(pageId, 'Scheduled post', {
+  scheduled_publish_time: futureTime
+});
+
+// Get comments
+const comments = await pages.comments.getComments(postId);
+
+// Auto-reply
+await pages.comments.autoReply(
+  postId,
+  ['support', 'help'],
+  'Please DM us for support!'
+);
+
+// Get insights
+const report = await pages.insights.getPageReport(pageId, 'week');
+console.log('Page views:', report.overview.page_views_total);
+console.log('Engagement:', report.engagement.page_engaged_users);
+```
+
+### 🔔 Webhooks
+
+#### Next.js App Router
+
+```typescript
+// app/api/webhook/route.ts
+import { createNextWebhook } from '@sndp/meta-whatsapp';
+
+const webhook = createNextWebhook({
+  verifyToken: process.env.META_WEBHOOK_VERIFY_TOKEN!,
+  appSecret: process.env.META_APP_SECRET!,
+  handlers: {
+    onMessage: async (message, metadata) => {
+      console.log('Received:', message.text?.body);
+      
+      // Auto-reply
+      if (message.text?.body?.toLowerCase().includes('hello')) {
+        const wa = new WhatsAppClient({
+          accessToken: process.env.META_ACCESS_TOKEN!,
+          phoneNumberId: metadata.phoneNumberId
+        });
+        
+        await wa.sendText(message.from, 'Hello! How can I help you?');
+      }
+    },
+    onStatus: async (status) => {
+      console.log('Message status:', status.status);
+    }
+  }
+});
+
+export const GET = webhook.GET;
+export const POST = webhook.POST;
+```
+
+#### Express
+
+```typescript
+import express from 'express';
+import { createExpressWebhook } from '@sndp/meta-whatsapp';
+
+const app = express();
+
+const webhook = createExpressWebhook({
+  verifyToken: process.env.META_WEBHOOK_VERIFY_TOKEN!,
+  appSecret: process.env.META_APP_SECRET!,
+  handlers: {
+    onMessage: async (message) => {
+      console.log('Message:', message);
+    }
+  }
+});
+
+app.get('/webhook', webhook.verify);
+app.post('/webhook', webhook.handle);
+
+app.listen(3000);
+```
+
+---
+
+## 🛠 CLI Commands
+
+```bash
+# Initialize new project
+npx @sndp/meta-cli init
+
+# Diagnose authentication
+npx @sndp/meta-cli auth
+
+# Test WhatsApp connection
+npx @sndp/meta-cli whatsapp
+
+# Verify webhook setup
+npx @sndp/meta-cli webhook
+
+# Complete health check
+npx @sndp/meta-cli doctor
+
+# Show SDK info
+npx @sndp/meta-cli info
+```
+
+### Doctor Output Example
+
+```
+🩺 Meta SDK Doctor Report
+
+✓ Node version: v20.10.0
+✓ SDK packages installed: 5
+
+📋 Environment Variables:
+✓ META_APP_ID ✓
+✓ META_APP_SECRET ✓
+✓ META_ACCESS_TOKEN ✓
+
+🌐 Meta API Connectivity:
+✓ Meta Graph API connection successful
+  Connected as: John Doe
+
+🔐 Permissions Check:
+✓ whatsapp_business_messaging ✅
+✓ instagram_content_publish ✅
+
+📊 Summary:
+🎉 Everything looks great! Your setup is ready to go.
+```
 
 ---
 
 ## 🏗 Architecture
 
-### Monorepo Structure
-```
-@sndp/meta-sdk/
-├── packages/
-│   ├── auth-client/       # Frontend OAuth handling
-│   ├── auth-server/       # Backend token management
-│   ├── whatsapp/          # WhatsApp Cloud API
-│   ├── instagram/         # Instagram Business API
-│   ├── pages/             # Facebook Pages API
-│   ├── core/              # Shared utilities & types
-│   └── cli/               # npx meta-sdk commands
-├── examples/              # Usage examples
-└── docs/                  # Documentation site
-```
+### Modular Design
 
-**Tooling:** Turborepo or PNPM Workspaces for monorepo management
-
----
-
-## 📦 Module Specifications
-
-### 1. @sndp/meta-auth-client (Frontend)
-
-**Purpose:** Client-side Facebook OAuth with zero security risks
-
-**Key Features:**
-- Popup and redirect login flows
-- CSRF protection (state parameter)
-- TypeScript-first API
-- Framework adapters (React hooks, Next.js helpers)
-
-**API Design:**
 ```typescript
-import { createFacebookLogin } from '@sndp/meta-auth-client';
-
-const { login, logout, getStatus } = createFacebookLogin({
-  appId: string,
-  scopes: string[],
-  version?: string,
-  redirectUri?: string
-});
-
-// React Hook
-const { login, user, loading } = useFacebookAuth({ appId, scopes });
-```
-
-### 2. @sndp/meta-auth-server (Backend)
-
-**Purpose:** Secure token exchange and management
-
-**Key Features:**
-- Short-lived → Long-lived token conversion
-- Token refresh automation
-- Secure verification endpoints
-- Debug token validation
-
-**API Design:**
-```typescript
-import { MetaAuthServer } from '@sndp/meta-auth-server';
-
-const auth = new MetaAuthServer({
-  appId: string,
-  appSecret: string
-});
-
-await auth.exchangeToken(shortLivedToken);
-await auth.refreshToken(longLivedToken);
-await auth.debugToken(token);
-```
-
-### 3. @sndp/meta-whatsapp
-
-**Purpose:** Complete WhatsApp Business Cloud API implementation
-
-**Key Features:**
-- Text, media, location, contact sharing
-- Template messages with dynamic variables
-- Interactive buttons and lists
-- Webhook event handling
-- Media upload/download
-- Message status tracking
-
-**API Design:**
-```typescript
+// Import only what you need
 import { WhatsAppClient } from '@sndp/meta-whatsapp';
-
-const wa = new WhatsAppClient({
-  accessToken: string,
-  phoneNumberId: string,
-  version?: string
-});
-
-// Simple text
-await wa.sendText(to, message);
-
-// Template with variables
-await wa.sendTemplate({
-  to: string,
-  templateName: string,
-  language: string,
-  components: TemplateComponent[]
-});
-
-// Interactive buttons
-await wa.sendButtons({
-  to: string,
-  bodyText: string,
-  buttons: Button[]
-});
-
-// Webhook handler
-const webhook = createWhatsAppWebhook({
-  verifyToken: string,
-  onMessage: (msg) => {},
-  onStatus: (status) => {}
-});
-```
-
-### 4. @sndp/meta-instagram
-
-**Purpose:** Instagram Business and Creator automation
-
-**Key Features:**
-- Auto-posting (feed, stories, reels)
-- Comment management and auto-reply
-- Mentions tracking
-- Media insights
-- Hashtag performance
-
-**API Design:**
-```typescript
 import { InstagramClient } from '@sndp/meta-instagram';
 
-const ig = new InstagramClient({
-  accessToken: string,
-  accountId: string
-});
-
-// Post content
-await ig.publishPost({
-  imageUrl: string,
-  caption: string,
-  location?: Location
-});
-
-await ig.publishReel({
-  videoUrl: string,
-  caption: string,
-  coverUrl?: string
-});
-
-// Engagement
-await ig.getComments(mediaId);
-await ig.replyToComment(commentId, text);
-
-// Analytics
-await ig.getInsights({
-  metrics: ['reach', 'engagement', 'impressions'],
-  period: 'day' | 'week' | 'month'
-});
+// Or use specific modules
+import { TextMessage } from '@sndp/meta-whatsapp/messages';
+import { FeedMedia } from '@sndp/meta-instagram/media';
 ```
 
-### 5. @sndp/meta-pages
+### Error Handling
 
-**Purpose:** Facebook Page management and automation
-
-**Key Features:**
-- Page token generation
-- Multi-page management
-- Scheduled posting
-- Comment moderation
-- Page insights
-
-**API Design:**
 ```typescript
-import { PagesClient } from '@sndp/meta-pages';
+import { MetaSDKError } from '@sndp/meta-core';
 
-const pages = new PagesClient({ accessToken: string });
-
-// Get managed pages
-const pageList = await pages.getPages();
-
-// Post to page
-await pages.publishPost(pageId, {
-  message: string,
-  link?: string,
-  media?: Media[]
-});
-
-// Insights
-await pages.getPageInsights(pageId, metrics);
-```
-
-### 6. @sndp/meta-core
-
-**Purpose:** Shared utilities and base functionality
-
-**Exports:**
-- Base HTTP client with retry logic
-- Error normalization
-- Type definitions
-- Validation schemas (Zod)
-- Rate limit handler
-- Pagination helper
-- Mock/dry-run system
-
----
-
-## 🎯 Sprint-Based Development Plan
-
-### Sprint 1: Foundation & Auth (Week 1)
-
-**Goals:**
-- Monorepo setup complete
-- Auth modules functional
-- Type system established
-
-**Tasks:**
-1. Initialize Turborepo/PNPM workspace
-2. Setup TypeScript configs (strict mode)
-3. Build `@sndp/meta-auth-client`:
-   - OAuth popup/redirect flows
-   - CSRF state handling
-   - React hooks implementation
-4. Build `@sndp/meta-auth-server`:
-   - Token exchange endpoints
-   - Token refresh logic
-   - Debug token validation
-5. Create base type definitions in `@sndp/meta-core`
-6. Setup testing framework (Vitest/Jest)
-
-**Deliverables:**
-- Working Facebook login (client + server)
-- Unit tests for auth flows
-- Initial documentation
-
----
-
-### Sprint 2: WhatsApp Module (Week 2)
-
-**Goals:**
-- Complete WhatsApp Cloud API integration
-- Webhook system operational
-
-**Tasks:**
-1. Build `WhatsAppClient` class with retry mechanism
-2. Implement message sending:
-   - Text messages
-   - Media (image, video, audio, document)
-   - Location and contacts
-3. Template message engine:
-   - Variable injection
-   - Header/body/footer support
-   - Button actions
-4. Interactive messages:
-   - Button lists
-   - Reply buttons
-   - List messages
-5. Webhook middleware:
-   - Signature verification (X-Hub-Signature-256)
-   - Event routing (message, status, etc.)
-   - Type-safe event handlers
-6. Media handling (upload/download)
-
-**Deliverables:**
-- Full WhatsApp API coverage
-- Webhook integration guide
-- Example Next.js app
-
----
-
-### Sprint 3: Instagram & Pages (Week 3)
-
-**Goals:**
-- Social media automation complete
-- Analytics integration
-
-**Tasks:**
-1. Build `InstagramClient`:
-   - Content publishing (feed, stories, reels)
-   - Comment fetching and replies
-   - Mention tracking
-   - Media insights
-2. Build `PagesClient`:
-   - Page discovery and token generation
-   - Post publishing (text, link, media)
-   - Scheduled posts
-   - Comment moderation
-   - Page analytics
-3. Create unified analytics interface
-4. Implement Graph API pagination helper
-
-**Deliverables:**
-- Instagram automation ready
-- Pages management ready
-- Analytics dashboard example
-
----
-
-### Sprint 4: DX & Polish (Week 4)
-
-**Goals:**
-- Best-in-class developer experience
-- Production-ready release
-
-**Tasks:**
-1. Build CLI tool (`@sndp/meta-cli`):
-   ```bash
-   npx meta-sdk init        # Project setup wizard
-   npx meta-sdk auth        # Auth diagnostics
-   npx meta-sdk whatsapp    # WhatsApp testing
-   npx meta-sdk webhook     # Webhook verification
-   npx meta-sdk doctor      # Complete health check
-   npx meta-sdk info        # SDK information
-   ```
-2. CLI features:
-   - Interactive prompts (inquirer)
-   - Colored output (chalk)
-   - Loading spinners (ora)
-   - Pretty boxes (boxen)
-   - Environment validation
-3. Mock/dry-run mode implementation
-4. Error normalization layer
-5. Rate limit handling with backoff
-6. Permission scope resolver
-7. Complete documentation site
-8. Migration guides
-9. Security audit
-10. NPM publishing preparation
-
-**Deliverables:**
-- Production-ready SDK
-- Complete documentation
-- Published to NPM
-- Example projects
-
----
-
-## 🔧 Technical Requirements
-
-### Mandatory Guidelines
-
-#### 1. **TypeScript Excellence**
-```typescript
-// ❌ NEVER use 'any'
-function bad(data: any) { }
-
-// ✅ ALWAYS provide proper types
-interface MetaResponse<T> {
-  data: T;
-  error?: MetaError;
-}
-
-function good(data: MetaResponse<User>) { }
-```
-
-#### 2. **Modular Imports**
-```typescript
-// ✅ Allow granular imports
-import { WhatsAppClient } from '@sndp/meta-sdk/whatsapp';
-import { sendText } from '@sndp/meta-sdk/whatsapp/messages';
-```
-
-#### 3. **Retry Mechanism**
-```typescript
-// Exponential backoff: 1s, 2s, 4s
-const retryConfig = {
-  maxRetries: 3,
-  baseDelay: 1000,
-  maxDelay: 10000,
-  onRetry: (attempt, error) => {
-    console.log(`Retry ${attempt}: ${error.message}`);
-  }
-};
-```
-
-#### 4. **Error Normalization**
-```typescript
-// Meta Error Code → Human Message + Action
-const errorMap = {
-  190: {
-    message: 'Access token expired',
-    action: 'Please re-authenticate',
-    recoverable: true
-  },
-  10: {
-    message: 'Permission not granted',
-    action: 'Request permission in App Review',
-    recoverable: false
-  }
-};
-
-class MetaSDKError extends Error {
-  code: number;
-  action: string;
-  recoverable: boolean;
-}
-```
-
-#### 5. **Environment Validation**
-```typescript
-import { z } from 'zod';
-
-const configSchema = z.object({
-  appId: z.string().min(1, 'App ID is required'),
-  appSecret: z.string().min(1, 'App Secret is required'),
-  phoneNumberId: z.string().optional(),
-  accessToken: z.string().min(1, 'Access Token is required')
-});
-
-// Validate at initialization
-const validateConfig = (config: unknown) => {
-  return configSchema.parse(config);
-};
-```
-
-#### 6. **Rate Limit Awareness**
-```typescript
-class RateLimiter {
-  private queue: Array<() => Promise<any>> = [];
-  private processing = false;
-  
-  async execute<T>(fn: () => Promise<T>): Promise<T> {
-    // Implement queue-based rate limiting
-    // Auto-backoff on 429 errors
+try {
+  await wa.sendText('123', 'Hello');
+} catch (error) {
+  if (error instanceof MetaSDKError) {
+    console.log('Error code:', error.code);
+    console.log('Message:', error.message);
+    console.log('Action:', error.action);
+    console.log('Recoverable:', error.recoverable);
   }
 }
 ```
 
-#### 7. **Mock Mode**
+### Auto Retry
+
 ```typescript
-// Environment variable
-META_SDK_MODE=mock
-
-// Implementation
-class WhatsAppClient {
-  constructor(config: Config) {
-    this.client = config.mode === 'mock' 
-      ? new MockMetaClient()
-      : new RealMetaClient();
-  }
-}
-
-// Returns fake but realistic responses
-```
-
-#### 8. **Webhook Router**
-```typescript
-// Unified webhook handler for all Meta products
-const webhook = createMetaWebhook({
-  verifyToken: string,
-  appSecret: string,
-  handlers: {
-    whatsapp: {
-      onMessage: (msg) => {},
-      onStatus: (status) => {}
-    },
-    instagram: {
-      onComment: (comment) => {},
-      onMention: (mention) => {}
-    },
-    pages: {
-      onPost: (post) => {},
-      onComment: (comment) => {}
-    }
-  }
+// Automatic retry with exponential backoff
+const wa = new WhatsAppClient({
+  accessToken: token,
+  phoneNumberId: phoneId
+  // Retry automatically on network errors
 });
+
+// Retries: 1s, 2s, 4s (3 attempts)
 ```
 
-#### 9. **Pluggable Token Storage**
-```typescript
-interface TokenStorage {
-  get(key: string): Promise<string | null>;
-  set(key: string, value: string, ttl?: number): Promise<void>;
-  delete(key: string): Promise<void>;
-}
+### Token Management
 
-// Built-in: Memory, Redis, Database
-// Custom: User-provided
+```typescript
+import { TokenManager } from '@sndp/meta-auth-server';
+
+const manager = new TokenManager({
+  appId: process.env.META_APP_ID!,
+  appSecret: process.env.META_APP_SECRET!,
+  autoRefresh: true,
+  refreshThresholdDays: 7 // Refresh 7 days before expiry
+});
+
+// Store token (automatically schedules refresh)
+await manager.storeToken('user123', accessToken);
+
+// Get token (auto-refreshes if needed)
+const token = await manager.getToken('user123');
 ```
 
-#### 10. **Pagination Helper**
-```typescript
-async function* paginateResults<T>(
-  endpoint: string,
-  params: object
-): AsyncGenerator<T[]> {
-  let nextUrl = endpoint;
-  
-  while (nextUrl) {
-    const response = await fetch(nextUrl);
-    const data = await response.json();
-    
-    yield data.data;
-    nextUrl = data.paging?.next;
+---
+
+## 🔧 Configuration
+
+### Environment Variables
+
+```bash
+# Meta App Configuration
+META_APP_ID=your_app_id
+META_APP_SECRET=your_app_secret
+META_ACCESS_TOKEN=your_access_token
+
+# WhatsApp Configuration
+META_PHONE_NUMBER_ID=your_phone_number_id
+META_BUSINESS_ACCOUNT_ID=your_business_account_id
+
+# Instagram Configuration
+META_INSTAGRAM_ACCOUNT_ID=your_instagram_account_id
+
+# Webhook Configuration
+META_WEBHOOK_VERIFY_TOKEN=your_verify_token
+META_WEBHOOK_URL=https://your-domain.com/api/webhook
+
+# Next.js (Client-side)
+NEXT_PUBLIC_META_APP_ID=${META_APP_ID}
+```
+
+### TypeScript Configuration
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true
   }
 }
-
-// Usage
-for await (const batch of paginateResults('/me/posts', {})) {
-  console.log(batch);
-}
 ```
 
 ---
 
-## ✅ Final Implementation Checklist
+## 📖 Documentation
 
-Copy this checklist for the developer:
+### Package Documentation
 
-### Core Features
-- [ ] Rate limit awareness & auto backoff
-- [ ] Permission / scope resolver
-- [ ] Unified webhook router (WhatsApp + IG + Pages)
-- [ ] Retry engine (exponential backoff, 3 attempts)
-- [ ] Meta error normalization layer
-- [ ] Mock / dry-run mode
-- [ ] Environment validation (Zod)
-- [ ] Pluggable token storage interface
-- [ ] Graph API pagination helper
-- [ ] Feature flag system (Free/Pro tiers ready)
+- [Core](./packages/core/README.md) - HTTP client, error handling, utilities
+- [Auth Client](./packages/auth-client/README.md) - Frontend authentication
+- [Auth Server](./packages/auth-server/README.md) - Backend token management
+- [WhatsApp](./packages/whatsapp/README.md) - WhatsApp Cloud API
+- [Instagram](./packages/instagram/README.md) - Instagram Business API
+- [Pages](./packages/pages/README.md) - Facebook Pages API
+- [CLI](./packages/cli/README.md) - Development tools
 
-### Auth Module
-- [ ] OAuth 2.0 (popup + redirect)
-- [ ] CSRF protection (state parameter)
-- [ ] Short → Long token conversion
-- [ ] Token auto-refresh
-- [ ] React hooks
-- [ ] Next.js API route helpers
+### Guides
 
-### WhatsApp Module
-- [ ] Text messages
-- [ ] Media messages (all types)
-- [ ] Template messages with variables
-- [ ] Interactive buttons
-- [ ] Interactive lists
-- [ ] Location & contacts
-- [ ] Webhook signature verification
-- [ ] Message status tracking
-- [ ] Media upload/download
+- [Getting Started](./docs/getting-started.md)
+- [Authentication Flow](./docs/authentication.md)
+- [WhatsApp Setup](./docs/whatsapp.md)
+- [Instagram Setup](./docs/instagram.md)
+- [Webhook Configuration](./docs/webhooks.md)
+- [Error Handling](./docs/error-handling.md)
+- [Best Practices](./docs/best-practices.md)
 
-### Instagram Module
-- [ ] Feed post publishing
-- [ ] Story publishing
-- [ ] Reel publishing
-- [ ] Comment fetching
-- [ ] Auto-reply system
-- [ ] Mention tracking
-- [ ] Media insights
-- [ ] Hashtag analytics
+### API Reference
 
-### Pages Module
-- [ ] Page discovery
-- [ ] Page token generation
-- [ ] Post publishing
-- [ ] Scheduled posts
-- [ ] Comment moderation
-- [ ] Page insights
-- [ ] Multi-page management
-
-### CLI Tools
-- [ ] `npx meta-sdk init` - Project wizard
-- [ ] `npx meta-sdk auth` - Auth diagnostics
-- [ ] `npx meta-sdk whatsapp` - WhatsApp test
-- [ ] `npx meta-sdk webhook` - Webhook verify
-- [ ] `npx meta-sdk doctor` - Health check
-- [ ] `npx meta-sdk info` - SDK info
-
-### DX & Quality
-- [ ] 100% TypeScript coverage
-- [ ] Zero `any` types
-- [ ] Full JSDoc documentation
-- [ ] Unit tests (>80% coverage)
-- [ ] Integration tests
-- [ ] Example projects (Next.js, React, Node.js)
-- [ ] Migration guides
-- [ ] Troubleshooting guides
-- [ ] Security audit completed
-
-### Documentation
-- [ ] Getting started guide
-- [ ] API reference (all modules)
-- [ ] Authentication flow diagram
-- [ ] Webhook setup guide
-- [ ] Error handling guide
-- [ ] Best practices
-- [ ] FAQ section
-- [ ] Video tutorials (optional)
+Full API documentation is available at [docs.sndp.dev/meta-sdk](https://docs.sndp.dev/meta-sdk)
 
 ---
 
-## 🎨 CLI Tool Specifications
+## 🎯 Features by Package
 
-### Visual Design
-```
-╭──────────────────────────────────────────╮
-│      🚀 Welcome to SNDP Meta SDK          │
-│  Build Facebook, Instagram & WhatsApp    │
-╰──────────────────────────────────────────╯
-```
+### @sndp/meta-whatsapp
 
-### Libraries
-- **Colors:** `chalk`
-- **Prompts:** `inquirer`
-- **Spinner:** `ora`
-- **Icons:** Unicode / `log-symbols`
-- **Boxes:** `boxen`
+- ✅ Text messages with URL preview
+- ✅ Media messages (image, video, audio, document)
+- ✅ Template messages with variables
+- ✅ Interactive buttons (max 3)
+- ✅ Interactive lists (up to 10 sections)
+- ✅ Location messages
+- ✅ Contact messages
+- ✅ Mark messages as read
+- ✅ Media upload/download
+- ✅ Webhook handling with signature verification
 
-### Commands
+### @sndp/meta-instagram
 
-#### `npx meta-sdk init`
-Interactive project setup:
-1. Framework selection (Next.js, React, Node.js)
-2. Module selection (Auth, WhatsApp, Instagram, Pages)
-3. Generate `.env.example`
-4. Webhook configuration
-5. Install dependencies
+- ✅ Feed posts (image, video)
+- ✅ Stories (image, video)
+- ✅ Reels with cover image
+- ✅ Carousel posts (2-10 items)
+- ✅ Comment management
+- ✅ Auto-reply to comments
+- ✅ Mention tracking
+- ✅ Hashtag search and analysis
+- ✅ Account insights
+- ✅ Post insights
+- ✅ Follower demographics
 
-#### `npx meta-sdk auth`
-Auth diagnostics:
-- ✅ App ID validation
-- ✅ App Secret validation
-- ✅ Redirect URI check
-- ⚠️ Token expiry warning
-- ✅ Permission status
+### @sndp/meta-pages
 
-#### `npx meta-sdk whatsapp`
-WhatsApp testing:
-- ✅ Access token valid
-- ✅ Phone Number ID linked
-- ✅ Webhook verified
-- ✅ Send test message
-- ✅ Delivery status
+- ✅ Text, link, photo, video posts
+- ✅ Scheduled posts
+- ✅ Post management (update, delete)
+- ✅ Comment moderation
+- ✅ Auto-reply to comments
+- ✅ Private message replies
+- ✅ Page insights and analytics
+- ✅ Follower demographics
+- ✅ Post promotion/boosting
+- ✅ Call-to-action buttons
 
-#### `npx meta-sdk doctor`
-Complete health check:
-- Node.js version
-- SDK version
-- Environment variables
-- Missing permissions
-- Configuration issues
-- Actionable suggestions
+### @sndp/meta-auth-server
+
+- ✅ OAuth 2.0 code exchange
+- ✅ Long-lived token generation (60 days)
+- ✅ Token auto-refresh
+- ✅ Token validation
+- ✅ Page access tokens (never expire)
+- ✅ Token revocation
+- ✅ CSRF protection
+- ✅ Express middleware
+- ✅ Next.js API handlers
 
 ---
 
-## 📚 Documentation Structure
+## 🧪 Testing
 
-```
-docs/
-├── getting-started/
-│   ├── installation.md
-│   ├── quick-start.md
-│   └── configuration.md
-├── modules/
-│   ├── auth.md
-│   ├── whatsapp.md
-│   ├── instagram.md
-│   └── pages.md
-├── guides/
-│   ├── authentication-flow.md
-│   ├── webhook-setup.md
-│   ├── error-handling.md
-│   └── best-practices.md
-├── api-reference/
-│   └── (auto-generated from JSDoc)
-└── examples/
-    ├── nextjs-app/
-    ├── react-app/
-    └── nodejs-server/
+```bash
+# Run all tests
+npm test
+
+# Run specific package tests
+npm test --workspace=@sndp/meta-whatsapp
+
+# Run with coverage
+npm test -- --coverage
+
+# Watch mode
+npm test -- --watch
 ```
 
 ---
 
-## 🚀 Success Metrics
+## 🤝 Contributing
 
-### Developer Experience
-- Setup time: < 5 minutes
-- First API call: < 10 minutes
-- Learning curve: Minimal (clear docs)
+We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for details.
 
-### Code Quality
-- TypeScript strict mode: ✅
-- Test coverage: >80%
-- Zero critical security issues
-- Performance: <100ms overhead
+### Development Setup
 
-### Community
-- GitHub stars target: 1000+ (6 months)
-- NPM downloads: 10k/month (3 months)
-- Active contributors: 5+ (6 months)
+```bash
+# Clone the repository
+git clone https://github.com/sndp/meta-sdk.git
+cd meta-sdk
+
+# Install dependencies
+pnpm install
+
+# Build all packages
+pnpm build
+
+# Run tests
+pnpm test
+
+# Start development mode
+pnpm dev
+```
+
+---
+
+## 📝 Examples
+
+### Full Projects
+
+- [Next.js App](./examples/nextjs-app) - Complete Next.js application
+- [React App](./examples/react-app) - React with Vite
+- [Node.js Server](./examples/nodejs-server) - Express server
+
+### Code Snippets
+
+- [WhatsApp Bot](./examples/snippets/whatsapp-bot.ts)
+- [Instagram Auto-Post](./examples/snippets/instagram-scheduler.ts)
+- [Comment Moderation](./examples/snippets/comment-moderator.ts)
+- [Analytics Dashboard](./examples/snippets/analytics-dashboard.ts)
+
+---
+
+## 🛡 Security
+
+### Best Practices
+
+- ✅ Never commit `.env` files
+- ✅ Always use environment variables
+- ✅ Validate webhook signatures
+- ✅ Use HTTPS in production
+- ✅ Implement rate limiting
+- ✅ Regularly rotate tokens
+- ✅ Follow principle of least privilege
+
+### Reporting Vulnerabilities
+
+Please report security vulnerabilities to security@sndp.dev
+
+---
+
+## 📊 Performance
+
+- **HTTP Client**: Built-in connection pooling
+- **Retry Logic**: Exponential backoff (3 attempts)
+- **Rate Limiting**: Automatic queue management
+- **Caching**: Optional Redis/in-memory support
+- **Pagination**: Async generators for large datasets
+
+---
+
+## 🗺 Roadmap
+
+- [x] Core authentication
+- [x] WhatsApp Cloud API
+- [x] Instagram Business API
+- [x] Facebook Pages API
+- [x] CLI tools
+- [ ] Facebook Ads API
+- [ ] Instagram Shopping API
+- [ ] Meta Business Suite integration
+- [ ] Advanced analytics dashboard
+- [ ] Webhook event router
+- [ ] Multi-language support
+
+---
+
+## 💬 Support
+
+- 📧 Email: support@sndp.dev
+- 💬 Discord: [Join our community](https://discord.gg/sndp-meta-sdk)
+- 🐛 Issues: [GitHub Issues](https://github.com/sndp/meta-sdk/issues)
+- 📖 Docs: [docs.sndp.dev/meta-sdk](https://docs.sndp.dev/meta-sdk)
 
 ---
 
 ## 📄 License
 
-MIT © Sandip (SNDP)
+MIT © [Sandip (SNDP)](https://github.com/sndp)
 
 ---
 
-## 🤝 Support
+## 🙏 Acknowledgments
 
-- Documentation: https://docs.sndp.dev/meta-sdk
-- Issues: GitHub Issues
-- Discord: Community chat
-- Email: support@sndp.dev
+- Meta Developer Platform
+- The awesome Node.js community
+- All our contributors
+
+---
+
+## 🌟 Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=sndp/meta-sdk&type=Date)](https://star-history.com/#sndp/meta-sdk&Date)
+
+---
+
+<div align="center">
+
+**[Website](https://sndp.dev)** • **[Documentation](https://docs.sndp.dev/meta-sdk)** • **[NPM](https://www.npmjs.com/package/@sndp/meta-sdk)** • **[GitHub](https://github.com/sndp/meta-sdk)**
+
+Made with ❤️ by [Sandip](https://github.com/sndp)
+
+</div>
