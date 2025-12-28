@@ -1,0 +1,24 @@
+// ============================================
+// NODE.JS JAVASCRIPT - package.json
+// ============================================
+{
+  "name": "meta-sdk-nodejs-app",
+  "version": "1.0.0",
+  "description": "Meta SDK Node.js application",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "@sndp/meta-auth-server": "^1.0.0",
+    "@sndp/meta-whatsapp": "^1.0.0",
+    "@sndp/meta-core": "^1.0.0",
+    "express": "^4.18.0",
+    "express-session": "^1.17.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  }
+}
